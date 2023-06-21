@@ -41,8 +41,8 @@ func sendDataToInflux(id string, data float64) error {
 	// Use blocking write client for writes to desired bucket
 	writeAPI := influxClient.WriteAPIBlocking("org", "org")
 	// Create point using full params constructor
-	p := influxdb2.NewPoint(id,
-		map[string]string{"unit": "%"},
+	p := influxdb2.NewPoint("cpu_usage",
+		map[string]string{"unit": "%", "id":id},
 		map[string]interface{}{"cpu": data},
 		time.Now())
 	// write point immediately
@@ -82,7 +82,7 @@ func main() {
 	done := make(chan bool)
 
 	for _, container := range containers.Containers {
-		go func() {
+		go func(container Container) {
 			for {
 				select {
 				case <-done:
@@ -114,7 +114,7 @@ func main() {
 					}
 				}
 			}
-		}()
+		}(container)
 	}
 
 	time.Sleep(1 * time.Hour)
